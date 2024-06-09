@@ -1,42 +1,39 @@
-package me.wiviw.nerdwhitelist.util.redis;
+package me.wiviw.redis;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import lombok.Getter;
-import lombok.Setter;
+import com.google.gson.Gson;
 import lombok.extern.log4j.Log4j2;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
-import java.util.Map;
+import static me.wiviw.Main.memberList;
+import static me.wiviw.Main.pubJedis;
 
 @Log4j2
 public class RedisClient {
 
-    protected static Jedis jedis;
+    public static Jedis subJedis;
 
-    @Getter
-    @Setter
-    private static Map<String, JsonElement> memberList;
-
-    private static class RunnableImpl implements Runnable {
+    public static class RunnableImpl implements Runnable {
 
         public void run() {
-            jedis.subscribe(new JedisPubSub() {
+            subJedis.subscribe(new JedisPubSub() {
                 @Override
                 public void onMessage(String channel, String message) {
-                    memberList = JsonParser.parseString(message).getAsJsonObject().asMap();
-
-                    log.debug("Updated Member list!\n{}", memberList.toString());
+                    log.info("Channel Requests Message Received: {}", message);
+                    sendMemberList();
                 }
-            }, "channel");
+            }, "Requests");
         }
     }
 
+    public static void sendMemberList(){
+        Gson gson = new Gson();
+        pubJedis.publish("MemberList", gson.toJson(memberList));
+    }
+
+
     public RedisClient(String uri) {
-        jedis = new Jedis(uri);
+        subJedis = new Jedis(uri);
 
         Thread t1 = new Thread(new RunnableImpl());
         t1.start();

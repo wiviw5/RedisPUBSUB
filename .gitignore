@@ -2,6 +2,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+users.json
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
@@ -34,5 +35,9 @@ build/
 ### VS Code ###
 .vscode/
 
+# Log file
+*.log
+
 ### Mac OS ###
 .DS_Store
+/.idea/
